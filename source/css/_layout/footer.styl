@@ -1,27 +1,29 @@
-// 页脚：与 Dock / 卡片一致的磨砂玻璃浮条
+// 页脚：不再是一张浮动卡片，而是页面向底部「逐渐模糊、逐渐沉淀」的收束区。
+// - 自身叠一层透明 → 极淡底色的竖向渐变，让正文自然沉入底部；
+// - ::before 用渐变遮罩的 backdrop-filter，把背景玻璃碎片自上而下逐渐揉化。
 #footer
   position: relative
-  margin: 32px auto 32px
-  max-width: 1170px
-  width: calc(100% - 30px)
-  border: 1px solid var(--glass-border)
-  border-radius: var(--card-radius)
-  background: var(--glass-bg)
-  box-shadow: var(--card-box-shadow)
-  backdrop-filter: saturate(180%) blur(20px)
-  -webkit-backdrop-filter: saturate(180%) blur(20px)
-  overflow: hidden
+  isolation: isolate
+  margin: 80px 0 0
+  width: 100%
+  padding-top: 40px
   color: var(--font-color)
+  background: linear-gradient(to bottom, transparent 0%, var(--footer-fade) 100%)
 
-  +minWidth2000()
-    max-width: calc(60% - 30px)
+  // 渐进模糊层：顶部完全清晰，向下平滑过渡到全模糊
+  &::before
+    content: ''
+    position: absolute
+    inset: 0
+    z-index: -1
+    pointer-events: none
+    backdrop-filter: saturate(150%) blur(16px)
+    -webkit-backdrop-filter: saturate(150%) blur(16px)
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 78%)
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 78%)
 
   +maxWidth768()
-    width: calc(100% - 20px)
-
-  & > *
-    position: relative
-    color: var(--font-color)
+    margin-top: 56px
 
   a
     color: var(--font-color)
@@ -45,13 +47,17 @@
     flex-wrap: wrap
     justify-content: space-between
     margin: 0 auto
-    padding: 36px 48px 4px
+    padding: 8px 48px 4px
+    max-width: 1170px
     width: 100%
     text-align: left
     gap: 13px
 
+    +minWidth2000()
+      max-width: 60%
+
     +maxWidth768()
-      padding: 28px 24px 0
+      padding: 0 24px
       gap: 10px
 
     .footer-flex-items
@@ -75,11 +81,16 @@
       white-space: nowrap
 
   .footer-other
-    padding: 22px 20px
+    margin: 0 auto
+    padding: 22px 20px 28px
+    max-width: 1170px
     width: 100%
     color: var(--card-meta)
     text-align: center
     font-size: .9em
+
+    +minWidth2000()
+      max-width: 60%
 
     a
       color: var(--card-meta)

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tessera.talyra42.top/sitemap.xml

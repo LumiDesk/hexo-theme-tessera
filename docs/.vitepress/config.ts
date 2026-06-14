@@ -10,7 +10,7 @@ export default defineConfig({
   lastUpdated: true,
   cleanUrls: true,
   sitemap: {
-    hostname: 'https://hexo-theme-tessera.vercel.app'
+    hostname: 'https://tessera.talyra42.top'
   },
 
   // 浏览器标签页图标

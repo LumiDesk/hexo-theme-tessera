@@ -1,7 +1,22 @@
 script.
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char])
+  const safeUrl = (value, allowMailto = true) => {
+    if (!value) return ''
+    const raw = String(value).trim()
+    try {
+      const parsed = new URL(raw, location.href)
+      const protocols = allowMailto ? ['http:', 'https:', 'mailto:', 'tel:'] : ['http:', 'https:']
+      return protocols.includes(parsed.protocol) ? raw : ''
+    } catch (error) {
+      return ''
+    }
+  }
+
   window.newestComments = {
     changeContent: content => {
       if (content === '') return content
+
+      content = String(content)
 
       content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[!{_p("aside.card_newest_comments.image")}]') // replace image link
       content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[!{_p("aside.card_newest_comments.link")}]') // replace url
@@ -25,12 +40,16 @@ script.
           if (!{theme.aside.card_newest_comments.avatar} && array[i].avatar) {
             const imgAttr = '!{theme.lazyload.enable && !theme.lazyload.native ? "data-lazy-src" : "src"}'
             const lazyloadNative = '!{theme.lazyload.enable && theme.lazyload.native ? "loading=\"lazy\"" : ""}'
-            result += `<a href="${array[i].url}" class="thumbnail"><img ${imgAttr}="${array[i].avatar}" alt="${array[i].nick}" ${lazyloadNative}></a>`
+            const commentUrl = escapeHtml(safeUrl(array[i].url) || '#')
+            const avatarUrl = escapeHtml(safeUrl(array[i].avatar, false) || '')
+            result += `<a href="${commentUrl}" class="thumbnail"><img ${imgAttr}="${avatarUrl}" alt="${escapeHtml(array[i].nick)}" ${lazyloadNative}></a>`
           }
 
+          const commentUrl = escapeHtml(safeUrl(array[i].url) || '#')
+          const content = escapeHtml(array[i].content)
           result += `<div class="content">
-          <a class="comment" href="${array[i].url}" title="${array[i].content}">${array[i].content}</a>
-          <div class="name"><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+          <a class="comment" href="${commentUrl}" title="${content}">${content}</a>
+          <div class="name"><span>${escapeHtml(array[i].nick)} / </span><time datetime="${escapeHtml(array[i].date)}">${escapeHtml(btf.diffDate(array[i].date, true))}</time></div>
           </div></div>`
         }
       } else {

@@ -17,6 +17,12 @@ class LocalSearch {
     this.datas = null
   }
 
+  escapeHtml (value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char])
+  }
+
   getIndexByWord (words, text, caseSensitive = false) {
     const index = []
     const included = new Set()
@@ -93,11 +99,11 @@ class LocalSearch {
     let result = ''
     let index = slice.start
     for (const { position, length } of slice.hits) {
-      result += val.substring(index, position)
+      result += this.escapeHtml(val.substring(index, position))
       index = position + length
-      result += `<mark class="search-keyword">${val.substr(position, length)}</mark>`
+      result += `<mark class="search-keyword">${this.escapeHtml(val.substr(position, length))}</mark>`
     }
-    result += val.substring(index, slice.end)
+    result += this.escapeHtml(val.substring(index, slice.end))
     return result
   }
 
@@ -147,12 +153,14 @@ class LocalSearch {
       let resultItem = ''
 
       url = new URL(url, location.origin)
+      if (!['http:', 'https:'].includes(url.protocol)) return
       url.searchParams.append('highlight', keywords.join(' '))
+      const safeHref = this.escapeHtml(url.href)
 
       if (slicesOfTitle.length !== 0) {
-        resultItem += `<li class="local-search-hit-item"><a href="${url.href}"><span class="search-result-title">${this.highlightKeyword(title, slicesOfTitle[0])}</span>`
+        resultItem += `<li class="local-search-hit-item"><a href="${safeHref}"><span class="search-result-title">${this.highlightKeyword(title, slicesOfTitle[0])}</span>`
       } else {
-        resultItem += `<li class="local-search-hit-item"><a href="${url.href}"><span class="search-result-title">${title}</span>`
+        resultItem += `<li class="local-search-hit-item"><a href="${safeHref}"><span class="search-result-title">${this.escapeHtml(title)}</span>`
       }
 
       slicesOfContent.forEach(slice => {

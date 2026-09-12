@@ -59,7 +59,9 @@ hexo.extend.filter.register('before_generate', () => {
     return Object.keys(data).reduce((result, key) => {
       let { name, version, file, other_name: otherName } = data[key]
       const cdnjsName = otherName || name
-      const cdnjsFile = file.replace(/^[lib|dist]*\/|browser\//g, '')
+      // Strip only the known package directory prefixes. The previous
+      // character-class expression also removed unrelated leading letters.
+      const cdnjsFile = file.replace(/^(?:lib|dist)\/|^browser\//g, '')
       const minCdnjsFile = minFile(cdnjsFile)
       if (cond === 'internal') file = `source/${file}`
       const minFilePath = minFile(file)

@@ -2,6 +2,25 @@ window.addEventListener('load', () => {
   const { algolia } = GLOBAL_CONFIG
   const { appId, apiKey, indexName, hitsPerPage = 5, languages } = algolia
 
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char])
+
+  // Algolia's highlighter uses <mark>; preserve only that tag after escaping
+  // all other markup and attribute content.
+  const safeHighlight = value => escapeHtml(value)
+    .replace(/&lt;(\/?)mark&gt;/gi, '<$1mark>')
+
+  const safeHref = value => {
+    try {
+      const parsed = new URL(String(value || ''), location.origin)
+      if (!['http:', 'https:'].includes(parsed.protocol)) return '#'
+      return escapeHtml(parsed.href)
+    } catch (error) {
+      return '#'
+    }
+  }
+
   if (!appId || !apiKey || !indexName) {
     return console.error('Algolia setting is invalid!')
   }
@@ -320,9 +339,9 @@ window.addEventListener('load', () => {
 
       return `
         <li class="ais-Hits-item" value="${itemNumber}">
-          <a href="${link}" class="algolia-hit-item-link">
-            <span class="algolia-hits-item-title">${title}</span>
-            ${content ? `<div class="algolia-hit-item-content">${content}</div>` : ''}
+          <a href="${safeHref(link)}" class="algolia-hit-item-link">
+            <span class="algolia-hits-item-title">${safeHighlight(title)}</span>
+            ${content ? `<div class="algolia-hit-item-content">${safeHighlight(content)}</div>` : ''}
           </a>
         </li>`
     }).join('')

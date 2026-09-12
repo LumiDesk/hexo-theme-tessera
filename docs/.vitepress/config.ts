@@ -47,6 +47,7 @@ export default defineConfig({
             { text: '特色页面', link: '/guide/pages' },
             { text: '侧边栏', link: '/guide/sidebar' },
             { text: '外观与特效', link: '/guide/appearance' },
+            { text: '无障碍与性能', link: '/guide/accessibility-performance' },
             { text: '标签插件', link: '/guide/tag-plugins' }
           ]
         },
@@ -64,7 +65,8 @@ export default defineConfig({
             { text: '搜索', link: '/advanced/search' },
             { text: '评论', link: '/advanced/comments' },
             { text: '统计与分析', link: '/advanced/analytics' },
-            { text: 'CDN 与注入', link: '/advanced/cdn' }
+            { text: 'CDN 与注入', link: '/advanced/cdn' },
+            { text: '安全', link: '/advanced/security' }
           ]
         }
       ]

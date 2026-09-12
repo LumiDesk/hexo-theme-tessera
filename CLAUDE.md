@@ -14,7 +14,7 @@
 
 `hexo-theme-tessera` 是一个 **Hexo 主题**（Pug 模板 + Stylus 样式 + 插件脚本），由 Butterfly 主题重构而来，重新以 **AGPL-3.0** 授权，作者 **Talyra42**，仓库归属组织 **LumiDesk**。设计风格**简洁克制**：纯净的浅 / 深底色（`#f7f9fe` / `#18171d`）上排布近乎实色的**描边卡片**（`$glass-bg = rgba(255,255,255,.88)` + 实色细边 + 12px 圆角 + 轻微 10px 磨砂），全站只用**一个蓝**（`#425AEF`）作为强调；顶部是一条全宽贴顶的磨砂玻璃导航栏（`#nav`，菜单项为胶囊药丸）；标志性的视觉签名是基于 **Canvas 2D（零依赖、限 ~30fps）** 的**漂浮玻璃碎片背景**（`bg3d.js`，已弃用 three.js），隐约透过卡片但不喧宾夺主。注意：**不是「全站玻璃拟态」，也不是「悬浮 Dock」**——磨砂质感仅用于顶栏与卡片的轻微叠层，真实设计语言见 `source/css/var.styl` 顶部的作者注释。
 
-本仓库**没有 build / lint / test 流程**——`package.json` 的 `test` 只是占位。主题由 Hexo 站点*消费*：Pug → HTML、Stylus → CSS 都在站点执行 `hexo generate` 时，由 `hexo-renderer-pug` 与 `hexo-renderer-stylus` 编译。
+仓库提供基础 smoke test 与 CI，但完整主题构建仍由 Hexo 站点执行：Pug → HTML、Stylus → CSS 都在站点执行 `hexo generate` 时，由 `hexo-renderer-pug` 与 `hexo-renderer-stylus` 编译。提交前至少运行 `node tools/smoke-test.mjs`；有博客 fixture 时再运行真实 `hexo clean && hexo generate`。
 
 ## 开发与验证流程
 
@@ -32,6 +32,7 @@
   ```
 - **改完 Stylus 一定先 `hexo clean` 再生成。** Hexo 只跟踪入口文件 `source/css/index.styl` 的 mtime，改被 `@import` 的分文件不清缓存不会重新编译——这是反复踩的坑。
 - 编译测试未提交改动：先跑 `tools/sync-to-blog.sh`，再 `hexo clean && hexo generate`，检查 `public/`。（若博客里的 `themes/tessera` 仍是 git clone 而非纯复制，旧办法「拷改动进去、再 `git -C themes/tessera checkout -- .` 还原」也可用——但**绝不能**对 clone 用 `rsync --delete-excluded`，那会删掉 `.git`。）
+- 主题仓库的快速检查：`node tools/smoke-test.mjs`。GitHub Actions 还会用最小 Hexo fixture 验证 `hexo generate`。
 
 ## 文档站（`docs/`）
 
@@ -74,6 +75,7 @@
 - `main.js` —— 顶栏导航、深色模式、懒加载初始化、右下角工具、滚动、标题滚动切换等。
 - `utils.js` —— `btf` 工具函数集合。
 - `bg3d.js` —— Canvas 2D 漂浮玻璃碎片背景（零依赖，已弃用 three.js；深浅色自适应、鼠标视差、滚动漂移、限 ~30fps、移动端默认关闭、尊重 `prefers-reduced-motion`）。
+- `rightmenu.js`、搜索和动态页面渲染会对外部/用户数据做 HTML 转义与 URL 协议校验；修改这些路径时要保持同一安全边界。
 - `rightmenu.js` —— 自定义右键菜单（导航 / 情境复制 / 随机文章 / 昼夜切换；Ctrl+右键回退系统菜单）。
 - `tw_cn.js` —— 简繁转换。
 - `search/`（`algolia.js`、`local-search.js`）。

@@ -292,7 +292,7 @@ pwa:                      # 渐进式网页应用
   favicon_16_16:
   mask_icon:
 Open_Graph_meta: { enable: true, option: }
-structured_data: { enable: false, alternate_name: }
+structured_data: { enable: false, alternate_name: } # enable 为 true 时输出 BlogPosting / WebSite JSON-LD
 css_prefix: true          # 自动加浏览器前缀
 inject:                   # 注入自定义 head / body 代码，见「CDN 与注入」
   head:

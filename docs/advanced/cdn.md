@@ -27,6 +27,10 @@ CDN:
 
 资源与 CDN 文件的映射关系定义在主题的 `plugins.yml` 中，由 `scripts/events/cdn.js` 据此拼装最终 URL。
 
+::: warning CDN 可用性与完整性
+不同 CDN 的收录范围和目录结构并不一致，`cdnjs` 不保证覆盖 `plugins.yml` 中的所有资源；切换 provider 后请执行一次 `hexo clean && hexo generate` 并检查生成的 URL。主题不会自动为跨域资源附加 SRI，生产环境可优先使用 `local`，或在部署层补充 CSP / SRI。
+:::
+
 ## 注入自定义代码 inject
 
 往 `<head>` 结尾前、或 `<body>` 结尾前插入任意 HTML / CSS / JS：

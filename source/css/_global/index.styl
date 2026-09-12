@@ -227,6 +227,41 @@ button
   cursor: pointer
   touch-action: manipulation
 
+// Keyboard users need a visible focus indicator after the base button reset.
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible
+  outline: 2px solid var(--text-hover)
+  outline-offset: 3px
+
+.skip-to-content
+  position: fixed
+  top: 8px
+  left: 8px
+  z-index: 100000
+  padding: 8px 12px
+  border-radius: 6px
+  background: var(--card-bg)
+  color: var(--text-highlight-color)
+  box-shadow: var(--card-box-shadow)
+  transform: translateY(-150%)
+  transition: transform .2s ease
+
+  &:focus
+    transform: translateY(0)
+
+@media (prefers-reduced-motion: reduce)
+  *,
+  *::before,
+  *::after
+    animation-duration: .01ms !important
+    animation-iteration-count: 1 !important
+    transition-duration: .01ms !important
+    scroll-behavior: auto !important
+
 a
   color: $a-link-color
   text-decoration: none

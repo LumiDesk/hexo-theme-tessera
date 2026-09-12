@@ -1,4 +1,5 @@
-if theme.structured_data
+- var jsonLdScript = ''
+if theme.structured_data && theme.structured_data.enable
   if page.layout === 'post'
     -
       // https://developers.google.com/search/docs/appearance/structured-data/article
@@ -41,7 +42,9 @@ if theme.structured_data
 
       if (isRootOrSubdomain) {
         const domain = new URL(config.url).hostname;
-        const alternateNames = theme.structured_data.alternate_name || [];
+        const alternateNames = Array.isArray(theme.structured_data.alternate_name)
+          ? [...theme.structured_data.alternate_name]
+          : [];
 
         if (config.subtitle) {
           alternateNames.push(config.subtitle);

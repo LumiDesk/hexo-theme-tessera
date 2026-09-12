@@ -10,6 +10,7 @@ html(lang=config.language data-theme=theme.display_mode class=htmlClassHideAside
   head
     include ./head.pug
   body
+    a.skip-to-content(href='#content-inner') 跳转到主要内容
     !=partial('includes/loading/index', {}, {cache: true})
 
     if theme.background

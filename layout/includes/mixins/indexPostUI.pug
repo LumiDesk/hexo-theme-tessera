@@ -16,7 +16,11 @@ mixin indexPostUI()
             .post_cover(class=leftOrRight)
               a(href=url_for(link) title=title)
                 if article.cover_type === 'img'
-                  img.post-bg(src=url_for(postCover) onerror=`this.onerror=null;this.src='${url_for(theme.error_img.post_page)}'` alt=title)
+                  // Keep the first card image on the critical rendering path.
+                  - const coverLoading = index === 0 ? 'eager' : 'lazy'
+                  - const coverPriority = index === 0 ? 'high' : 'auto'
+                  - const coverClass = index === 0 ? 'post-bg no-lazyload' : 'post-bg'
+                  img(class=coverClass src=url_for(postCover) loading=coverLoading fetchpriority=coverPriority decoding='async' onerror=`this.onerror=null;this.src='${url_for(theme.error_img.post_page)}'` alt=title)
                 else
                   div.post-bg(style=`background: ${postCover}`)
           .recent-post-info(class=noCover)

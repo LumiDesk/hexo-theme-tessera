@@ -41,5 +41,5 @@ jobs:
           ln -s "$GITHUB_WORKSPACE" "$fixture/themes/tessera"
           # Avoid pnpm's interactive build-script approval in the fixture.
           pnpm --dir "$fixture" install --no-frozen-lockfile --ignore-scripts
-          (cd "$fixture" && pnpm exec hexo generate)
+          (cd "$fixture" && node -e "const Hexo=require('hexo'); const hexo=new Hexo(process.cwd(),{}); hexo.init().then(()=>hexo.call('generate')).then(()=>process.exit(0)).catch(error=>{console.error(error); process.exit(1)})")
           test -f "$fixture/public/index.html"

@@ -32,7 +32,7 @@
   ```
 - **改完 Stylus 一定先 `hexo clean` 再生成。** Hexo 只跟踪入口文件 `source/css/index.styl` 的 mtime，改被 `@import` 的分文件不清缓存不会重新编译——这是反复踩的坑。
 - 编译测试未提交改动：先跑 `tools/sync-to-blog.sh`，再 `hexo clean && hexo generate`，检查 `public/`。（若博客里的 `themes/tessera` 仍是 git clone 而非纯复制，旧办法「拷改动进去、再 `git -C themes/tessera checkout -- .` 还原」也可用——但**绝不能**对 clone 用 `rsync --delete-excluded`，那会删掉 `.git`。）
-- 主题仓库的快速检查：`node tools/smoke-test.mjs`。GitHub Actions 还会用最小 Hexo fixture 验证 `hexo generate`。
+- 主题仓库的快速检查：`node tools/smoke-test.mjs`。GitHub Actions 运行同一 smoke test；完整 `hexo generate` 应在真实博客 fixture 中验证。
 
 ## 文档站（`docs/`）
 

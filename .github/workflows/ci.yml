@@ -18,5 +18,3 @@ jobs:
       # The theme smoke checks do not need dependency lifecycle scripts.
       - run: pnpm install --no-frozen-lockfile --ignore-scripts
       - run: pnpm test
-
-\n

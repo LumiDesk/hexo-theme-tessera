@@ -49,10 +49,70 @@
     if !page.shuoshuo_url
       script(type='application/json' id='shuoshuo-data')!= safeJSON(localDate)
 
-    - const { enable, native, placeholder, field } = theme.lazyload
+      - const { enable, native, placeholder, field } = theme.lazyload
     script.
       (() => {
-        const limitConfig = !{ JSON.stringify(page.limit || {}) }
+        const limitConfig = !{ safeJSON(page.limit || {}) }
+
+        const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char])
+
+        const safeUrl = (value, allowMailto = true) => {
+          if (!value) return ''
+          const raw = String(value).trim()
+          try {
+            const parsed = new URL(raw, location.href)
+            const protocols = allowMailto ? ['http:', 'https:', 'mailto:', 'tel:'] : ['http:', 'https:']
+            return protocols.includes(parsed.protocol) ? raw : ''
+          } catch (error) {
+            return ''
+          }
+        }
+
+        // Keep the article's formatting while removing executable markup and unsafe URLs.
+        const sanitizeHtml = value => {
+          if (!value) return ''
+          const allowedTags = new Set([
+            'A', 'ABBR', 'B', 'BLOCKQUOTE', 'BR', 'CAPTION', 'CODE', 'COL', 'COLGROUP',
+            'DEL', 'DETAILS', 'DIV', 'EM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR',
+            'I', 'IMG', 'INS', 'KBD', 'LI', 'MARK', 'OL', 'P', 'PRE', 'S', 'SMALL',
+            'SPAN', 'STRONG', 'SUB', 'SUP', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH',
+            'THEAD', 'TR', 'U', 'UL', 'VIDEO', 'AUDIO', 'SOURCE'
+          ])
+          const removedTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'FORM', 'META', 'LINK'])
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(String(value), 'text/html')
+          const visit = parent => {
+            Array.from(parent.children).forEach(node => {
+              const tagName = node.tagName
+              if (removedTags.has(tagName)) {
+                node.remove()
+                return
+              }
+              if (!allowedTags.has(tagName)) {
+                while (node.firstChild) parent.insertBefore(node.firstChild, node)
+                node.remove()
+                return
+              }
+
+              Array.from(node.attributes).forEach(attribute => {
+                const name = attribute.name.toLowerCase()
+                if (name.startsWith('on') || name === 'style' || name === 'srcset' || name === 'ping') {
+                  node.removeAttribute(attribute.name)
+                } else if (name === 'href' || name === 'cite') {
+                  if (!safeUrl(attribute.value)) node.removeAttribute(attribute.name)
+                } else if (name === 'src' || name === 'poster' || name === 'xlink:href') {
+                  if (!safeUrl(attribute.value, false)) node.removeAttribute(attribute.name)
+                } else if (name === 'target' && attribute.value !== '_blank') {
+                  node.removeAttribute(attribute.name)
+                }
+              })
+              if (node.getAttribute('target') === '_blank') node.setAttribute('rel', 'noopener noreferrer')
+              visit(node)
+            })
+          }
+          visit(doc.body)
+          return doc.body.innerHTML
+        }
 
         const sortDataByDate = data => data.sort((a, b) => new Date(b.date) - new Date(a.date))
 
@@ -89,8 +149,8 @@
           const config = {
             enable: !{Boolean(enable)},
             native: !{Boolean(native)},
-            field: '!{field}',
-            placeholder: '!{url_for(placeholder)}',
+            field: !{safeJSON(field)},
+            placeholder: !{safeJSON(url_for(placeholder))},
           }
 
           if (!config.enable || config.field !== 'site') return str
@@ -124,14 +184,14 @@
         const renderData = (dataSlice) => {
           const content = dataSlice.map(item => {
             const formattedDate = formatToTimeZone(item.date)
-            const tags = item.tags && item.tags.map(tag => `<span class="shuoshuo-tag">${tag}</span>`).join('') || ''
+            const tags = item.tags && item.tags.map(tag => `<span class="shuoshuo-tag">${escapeHtml(tag)}</span>`).join('') || ''
             const commentButton = item.key && !{commentsJsLoad}
               ? `<div class="shuoshuo-comment-btn" onclick="addCommentToShuoshuo(event)">
                   <i class="fa-solid fa-comments"></i>
                 </div>`
               : ''
             const commentContainer = item.key
-              ? `<div class="shuoshuo-comment no-comment" data-key="${item.key}"></div>`
+              ? `<div class="shuoshuo-comment no-comment" data-key="${escapeHtml(item.key)}"></div>`
               : ''
 
             return `
@@ -139,16 +199,16 @@
                 <div class="container">
                   <div class="shuoshuo-item-header">
                     <div class="shuoshuo-avatar">
-                      <img class="no-lightbox" src="${item.avatar || '!{url_for(theme.avatar.img)}'}">
+                      <img class="no-lightbox" src="${escapeHtml(safeUrl(item.avatar, false) || '!{url_for(theme.avatar.img)}')}">
                     </div>
                     <div class="shuoshuo-info">
-                      <div class="shuoshuo-author">${item.author || '!{config.author}'}</div>
-                      <time class="shuoshuo-date" title="${formattedDate}">
-                        ${btf.diffDate(formattedDate, true)}
+                      <div class="shuoshuo-author">${escapeHtml(item.author || '!{config.author}')}</div>
+                      <time class="shuoshuo-date" title="${escapeHtml(formattedDate)}">
+                        ${escapeHtml(btf.diffDate(formattedDate, true))}
                       </time>
                     </div>
                   </div>
-                  <div class="shuoshuo-content">${addLazyload(item.content)}</div>
+                  <div class="shuoshuo-content">${addLazyload(sanitizeHtml(item.content))}</div>
                   <div class="shuoshuo-footer ${tags ? 'flex-between' : 'flex-end'}">
                     ${tags ? `<div class="shuoshuo-tags">${tags}</div>` : ''}
                     ${commentButton}
@@ -310,8 +370,8 @@
         const loadShuoshuo = async () => {
           try {
             let originData = []
-            if (!{Boolean(page.shuoshuo_url)}) {
-              const response = await fetch('!{url_for(page.shuoshuo_url)}')
+            if ({Boolean(page.shuoshuo_url)}) {
+              const response = await fetch(!{safeJSON(url_for(page.shuoshuo_url))})
               originData = await response.json()
             } else {
               const dataElement = document.getElementById('shuoshuo-data')

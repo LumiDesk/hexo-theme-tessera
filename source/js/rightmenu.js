@@ -71,8 +71,12 @@
     menu.style.top = Math.max(8, y) + 'px'
   }
 
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char])
+
   const item = (act, icon, label) =>
-    '<button class="rm-item" data-act="' + act + '"><i class="fas ' + icon + '"></i><span>' + label + '</span></button>'
+    '<button class="rm-item" data-act="' + act + '"><i class="fas ' + icon + '"></i><span>' + escapeHtml(label) + '</span></button>'
 
   document.addEventListener('contextmenu', e => {
     // 输入区不接管，保留系统菜单；按住 Ctrl 也放行（逃生通道）
@@ -145,9 +149,9 @@
       case 'searchsel':
         window.open('https://www.bing.com/search?q=' + encodeURIComponent(ctxState.sel), '_blank')
         break
-      case 'openlink': window.open(ctxState.href, '_blank'); break
+      case 'openlink': window.open(ctxState.href, '_blank', 'noopener,noreferrer'); break
       case 'copylink': copy(ctxState.href).then(() => toast('已复制链接地址')); break
-      case 'openimg': window.open(ctxState.src, '_blank'); break
+      case 'openimg': window.open(ctxState.src, '_blank', 'noopener,noreferrer'); break
       case 'copyimg': copy(ctxState.src).then(() => toast('已复制图片地址')); break
     }
     hide()
